@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: feedback-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        generateValue: false
+        sync: false
+      - key: PORT
+        value: 3001
+
+  - type: static site
+    name: feedback-portal
+    plan: free
+    buildCommand: cd '../feedback portal' && npm install && npm run build
+    staticPublishPath: ../feedback portal/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false

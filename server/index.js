@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,45 +12,45 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb://localhost:27017/Students")
+const MongoDB_uri = process.env.MONGODB_URI || "mongodb://localhost:27017/Students";
+const PORT = process.env.PORT || 3001;
+
+mongoose.connect(MongoDB_uri)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB error:', err));
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    StudentModel.findOne({email: email})
-    .then(student => {
-        if(student) {
-            if(student.password === password) {
-                res.json("Success");
-            } else {
-                res.json("Password is incorrect");
-            }
-        } else {
-            res.json("User not registered");
+    try {
+        const { email, password } = req.body;
+        const student = await StudentModel.findOne({email: email});
+        
+        if(!student) {
+            return res.status(400).json({ message: "User not registered" });
         }
-    })
+        
+        if(student.password !== password) {
+            return res.status(400).json({ message: "Password is incorrect" });
+        }
+        
+        res.json({ message: "Success", user: { id: student._id, email: student.email, name: student.name } });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 
 app.post('/register', async (req, res) => {
-    StudentModel.create(req.body)
-    .then(student => res.json(student))
-    .catch(err => res.json(err));
+    try {
+        const student = await StudentModel.create(req.body);
+        res.status(201).json({ message: "Registration successful", user: { id: student._id, email: student.email, name: student.name } });
+    } catch(err) {
+        res.status(400).json({ error: err.message });
+    }
 });
 
 
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-// multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const safe = Date.now() + "-" + file.originalname.replace(/\s+/g, '-');
-    cb(null, safe);
-  }
-});
+// Use memory storage for Render (serverless environment)
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // POST feedback with optional image (use this route — replaces existing /feedback handler)
@@ -63,9 +64,9 @@ app.post('/feedback', upload.single('image'), async (req, res) => {
 
     if (!message) return res.status(400).json({ error: 'message required' });
 
-    const image = req.file ? req.file.filename : undefined;
+    // Note: File uploads stored in memory for serverless; image not saved to DB
 
-    const fb = await FeedbackModel.create({ topic, category, priority, message, image });
+    const fb = await FeedbackModel.create({ topic, category, priority, message });
     return res.status(201).json(fb);
   } catch (err) {
     console.error('Error saving feedback:', err);
@@ -84,5 +85,11 @@ app.get('/feedbacks', async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log('Server listening on http://localhost:3001'));
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Server error', message: err.message });
+});
+
+app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
 
