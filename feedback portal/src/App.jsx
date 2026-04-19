@@ -1,13 +1,24 @@
 import { useState, useEffect } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css';
 import Signup from './components/Signup'
 import Login from './components/Login';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Homepage from './Home';
 import Dashboard from './components/Dashboard';
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import AdminDashboard from './components/AdminDashboard';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 
+const ADMIN_ROLES = ["teacher", "hod", "principal"];
+
+function AdminRoute({ user, children }) {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!ADMIN_ROLES.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+}
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -28,9 +39,17 @@ function App() {
       <Navbar user={user} setUser={setUser} />
       <Routes>
         <Route path="/home" element={<Homepage />} />
-        <Route path="/register" element={<Signup setUser={setUser} />} />
+        <Route path="/register" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute user={user}>
+              <AdminDashboard user={user} />
+            </AdminRoute>
+          }
+        />
         <Route path="/" element={<Homepage />} />
       </Routes>
 

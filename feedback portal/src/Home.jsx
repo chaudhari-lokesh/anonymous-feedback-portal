@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { getApiBase } from "./api";
 
 export default function Home() {
   const [category, setCategory] = useState("");
@@ -48,7 +47,7 @@ export default function Home() {
       form.append("message", message);
       if (image) form.append("image", image);
 
-     await axios.post(`${API_BASE_URL}/feedback`, form, {
+     await axios.post(`${getApiBase()}/feedback`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

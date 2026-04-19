@@ -35,6 +35,15 @@ const Navbar = ({ user, setUser }) => {
               >
                 Sign Out
               </button>
+              {["teacher", "hod", "principal"].includes(user.role) && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin")}
+                  className="ml-2 px-4 py-1.5 bg-violet-700 text-white rounded-md text-sm hover:bg-violet-800"
+                >
+                  Admin
+                </button>
+              )}
               <button
                 onClick={() => navigate("/dashboard")}
                 className="ml-2 px-4 py-1.5 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"

@@ -1,79 +1,36 @@
-HEAD
-# Anonymous Feedback Portal — Server
+# Anonymous feedback portal
 
-# Anonymous Feedback Portal
-c3e625e0b4ebacb07806054acfde3c75d9e22b00
+React + Vite + Tailwind frontend in `feedback portal/`, Express + MongoDB API in `server/`.
 
-This repository contains a simple anonymous feedback portal with a frontend (in `feedback portal/`) and an Express-based backend (this folder).
+## Run locally
 
-## Overview
-- Frontend: React + Vite + Tailwind located in `feedback portal/`.
-- Backend: Node.js / Express located in this folder (`server/`).
-- Purpose: collect anonymous student feedback, store it, and provide basic endpoints to manage feedback and students.
-
-## Repo structure (relevant parts)
-- `feedback portal/` — frontend source (Vite, src/, components/)
-- `server/` — backend API
-  - `index.js` — server entrypoint
-  - `models/Feedback.js`, `models/Student.js` — Mongoose models
-  - `.env` — environment variables (not committed)
-  - `uploads/` — file upload storage
-
-## Prerequisites
-- Node.js (16+ recommended)
-- npm or yarn
-- MongoDB (local or Atlas) if the backend uses Mongoose
-
-## Backend: setup & run
-1. Open a terminal in the `server` folder:
+**API** (from `server/`):
 
 ```bash
 cd server
 npm install
-```
-
-2. Create a `.env` file (there is a sample `.env` in the folder). Typical variables:
-
-- `PORT` — server port (e.g. `5000`)
-- `MONGODB_URI` or `DATABASE_URL` — connection string for MongoDB
-- Any other secrets used by `index.js`
-
-3. Start the server:
-
-```bash
-# dev
-node index.js
-# or if package.json defines a start script
+# copy .env.example to .env and set MONGODB_URI, JWT_SECRET
 npm start
 ```
 
-The server will listen on the configured `PORT` and use the `uploads/` folder for any file uploads.
-
-## Frontend: setup & run (feedback portal)
-1. Open a terminal in the `feedback portal` folder:
+**Client** (from `feedback portal/`):
 
 ```bash
-cd "feedback portal"
 npm install
 npm run dev
 ```
 
-2. The Vite dev server will typically run on `http://localhost:5173` (or another port shown in the terminal).
+Set `VITE_API_URL` if the API is not at `http://localhost:3001`.
 
-## API (expected endpoints)
-The backend includes models for `Feedback` and `Student`. Typical endpoints you can expect or add:
+## Deploy on Render
 
-- `GET /api/feedback` — list feedback
-- `POST /api/feedback` — submit new feedback
-- `GET /api/students` — list students
-- `POST /api/students` — add a student
-- `POST /api/upload` — upload files (if implemented)
+Use `render.yaml` (Blueprint) or create two services manually:
 
-Check `index.js` for the exact routes and middleware.
+1. **Web service** — root `server/`, build `npm install`, start `npm start`. Set `MONGODB_URI` (Atlas) and `JWT_SECRET` (long random string). Render sets `PORT` automatically.
+2. **Static site** — root `feedback portal/`, build `npm install && npm run build`, publish `dist`. Set `VITE_API_URL` to your API’s public URL (e.g. `https://feedback-api-xxxx.onrender.com`), no trailing slash.
 
-## Notes
-- The `uploads/` folder is present for storing uploaded files; ensure it exists and is writable.
-- Keep secrets out of source control; add `.env` to `.gitignore` (already present).
-<<<<<<< HEAD
-=======
->>>>>>> c3e625e0b4ebacb07806054acfde3c75d9e22b00
+In **Atlas → Network Access**, allow `0.0.0.0/0` (or Render’s egress IPs) so the API can connect. After the API is live, run `seed:teacher` locally with `MONGODB_URI` pointing at Atlas so your admin user exists.
+
+## Admin user
+
+Staff roles (`teacher`, `hod`, `principal`) are not created by public signup. Use `npm run seed:teacher` in `server/` with `TEACHER_EMAIL` and `TEACHER_PASSWORD`, or add a user in MongoDB with a bcrypt password hash and `role: "teacher"`.

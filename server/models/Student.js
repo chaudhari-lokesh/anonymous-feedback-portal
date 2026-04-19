@@ -14,8 +14,17 @@ const StudentSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    role: {
+        type: String,
+        enum: ["student", "teacher", "hod", "principal"],
+        default: "student"
+    },
+    department: {
+        type: String,
+        default: "CSE"
     }
-});
+}, { timestamps: true });
 
 const StudentModel = mongoose.model('Student', StudentSchema);
 

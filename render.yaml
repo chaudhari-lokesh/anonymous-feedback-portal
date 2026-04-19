@@ -1,24 +1,29 @@
+# Blueprint: connect repo in Render → New → Blueprint → apply this file
+# Deploy API first, copy its URL, then set VITE_API_URL on the static site and redeploy.
+
 services:
   - type: web
     name: feedback-api
-    env: node
+    runtime: node
     plan: free
+    rootDir: server
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        generateValue: false
         sync: false
-      - key: PORT
-        value: 3001
+      - key: JWT_SECRET
+        sync: false
 
-  - type: static site
+  - type: web
     name: feedback-portal
+    runtime: static
     plan: free
-    buildCommand: cd '../feedback portal' && npm install && npm run build
-    staticPublishPath: ../feedback portal/dist
+    rootDir: "feedback portal"
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         sync: false
