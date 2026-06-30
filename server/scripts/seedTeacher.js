@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
 const StudentModel = require(path.join(__dirname, '..', 'models', 'Student'));
 
-const uri = process.env.MONGODB_URI || 'mongodb+srv://feedback_user:9mmHUYcYhzVlJJUu@studentsportal.gy0rmvs.mongodb.net/?appName=StudentsPortal';
+const uri = process.env.MONGODB_URI || '';
 const databaseName = process.env.MONGODB_DB_NAME || 'StudentsPortal';
 
 async function main() {
