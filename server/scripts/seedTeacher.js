@@ -1,10 +1,11 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
-const path = require('path');
 const StudentModel = require(path.join(__dirname, '..', 'models', 'Student'));
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/Students';
+const uri = process.env.MONGODB_URI || 'mongodb+srv://feedback_user:9mmHUYcYhzVlJJUu@studentsportal.gy0rmvs.mongodb.net/?appName=StudentsPortal';
+const databaseName = process.env.MONGODB_DB_NAME || 'StudentsPortal';
 
 async function main() {
   const email = String(process.env.TEACHER_EMAIL || 'teacher@school.edu').trim();
@@ -18,7 +19,8 @@ async function main() {
     process.exit(1);
   }
 
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, { dbName: databaseName, serverSelectionTimeoutMS: 10000 });
+  console.log('Connected to database:', mongoose.connection.db.databaseName);
 
   let user = await StudentModel.findOne({ email });
   const hash = await bcryptjs.hash(password, 10);
